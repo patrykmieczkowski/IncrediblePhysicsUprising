@@ -4,39 +4,86 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class InputGame extends ApplicationAdapter implements InputProcessor {
+
+    public static class Bitch {
+        public SpriteBatch batch;
+        public Sprite sprite;
+
+        public Bitch(SpriteBatch batch, Sprite sprite) {
+            this.batch = batch;
+            this.sprite = sprite;
+        }
+    }
+
     float w;
     float h;
     int lastCatX, lastCatY;
     int currentOffsetX = 0, currentOffsetY = 0;
     public static final String TAG = InputGame.class.getSimpleName();
     private SpriteBatch batch;
-    private SpriteBatch backgroundBatch;
+    //    private SpriteBatch backgroundBatch;
     private Texture texture;
-    private Texture backgroundTexture;
+    // private Texture backgroundTexture;
     private Sprite sprite;
-    private Sprite backgroundSprite;
-
+    //    private Sprite backgroundSprite;
+    ArrayList<Bitch> buckets;
+    ArrayList<Bitch> markers;
     int selectedScreen;
+    Texture bucketTexture;
+    Texture markerTexture;
+    Finishable finishable;
+    long startTime;
 
-    public InputGame(int screen ) {
+    public InputGame(Finishable finishable) {
         super();
+        this.finishable = finishable;
 //        Gdx.app.log(TAG, "selected screen = " + screen);
-
 //        selectedScreen = screen;
 //        Gdx.app.log(TAG, "selected screen: " + String.valueOf(screen));
     }
 
+    private SpriteBatch textBatch;
+    private BitmapFont font;
+
     @Override
     public void create() {
         Gdx.app.log(TAG, "create()");
+        startTime = System.currentTimeMillis();
+        textBatch = new SpriteBatch();
+        font = new BitmapFont();
+        font.setColor(Color.RED);
+
+
+        buckets = new ArrayList<Bitch>();
+        markers = new ArrayList<Bitch>();
+        bucketTexture = new Texture(Gdx.files.internal("delete.png"));
+        markerTexture = new Texture(Gdx.files.internal("map_marker.png"));
+        Random random = new Random();
+        for (int j = 0; j < 5; j++) {
+            SpriteBatch batch = new SpriteBatch();
+            Sprite sprite1 = new Sprite(bucketTexture);
+            sprite1.setPosition(random.nextInt(700), random.nextInt(400));
+            buckets.add(new Bitch(batch, sprite1));
+        }
+        for (int j = 0; j < 5; j++) {
+            SpriteBatch batch = new SpriteBatch();
+            Sprite sprite1 = new Sprite(markerTexture);
+            sprite1.setPosition(random.nextInt(700), random.nextInt(400));
+            markers.add(new Bitch(batch, sprite1));
+        }
 
         InputMultiplexer im = new InputMultiplexer();
         GestureDetector gd = new GestureDetector(new GestureDetector.GestureListener() {
@@ -97,11 +144,11 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
         w = Gdx.graphics.getWidth();
         h = Gdx.graphics.getHeight();
         batch = new SpriteBatch();
-        backgroundBatch = new SpriteBatch();
+//        backgroundBatch = new SpriteBatch();
         texture = new Texture(Gdx.files.internal("cat.png"));
-        backgroundTexture = new Texture(Gdx.files.internal("bigimage.jpg"));
-        backgroundSprite = new Sprite(backgroundTexture);
-        backgroundSprite.setPosition(0, 0);
+//        backgroundTexture = new Texture(Gdx.files.internal("bigimage.jpg"));
+//        backgroundSprite = new Sprite(backgroundTexture);
+//        backgroundSprite.setPosition(0, 0);
         sprite = new Sprite(texture);
 
         int newCatX = (int) (w / 2 - sprite.getWidth() / 2);
@@ -114,13 +161,47 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
         sprite.setPosition(lastCatX, lastCatY);
     }
 
+    FailedCallback failedCallback = new FailedCallback() {
+        @Override
+        public void onFail() {
+            loser = true;
+            if (finishable != null) finishable.finish(false, -1);
+        }
+    };
+    ClearCallback clearCallback = new ClearCallback() {
+        @Override
+        public void onCleared() {
+            winner = true;
+            long timeElapsed = (System.currentTimeMillis() - startTime);
+            if (finishable != null) finishable.finish(true, timeElapsed);
+        }
+    };
+    boolean winner, loser;
+
     @Override
     public void render() {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        backgroundBatch.begin();
-        backgroundSprite.draw(backgroundBatch);
-        backgroundBatch.end();
+//        backgroundBatch.begin();
+//        backgroundSprite.draw(backgroundBatch);
+//        backgroundBatch.end();
+        setupBuckets(failedCallback);
+        setupMarkers(clearCallback);
+
+        if (winner) {
+            Gdx.app.log(TAG, "WINNER!!!");
+            textBatch.begin();
+
+            font.draw(textBatch, "Winner!!!", 200, 200);
+            textBatch.end();
+        }
+        if (loser) {
+
+            Gdx.app.log(TAG, "LOSER!!!");
+            textBatch.begin();
+            font.draw(textBatch, "Loser!!!", 200, 200);
+            textBatch.end();
+        }
 
         batch.begin();
         float accelX = Gdx.input.getAccelerometerX();
@@ -133,16 +214,82 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
         lastCatX = (Math.abs(lastCatX - newCatX) < 10.07) ? lastCatX : newCatX;
         lastCatY = (Math.abs(lastCatY - newCatY) < 10.07) ? lastCatY : newCatY;
 
-        sprite.setPosition(lastCatX, lastCatY);
+        if (!loser && !winner)
+            sprite.setPosition(lastCatX, lastCatY);
 
         sprite.draw(batch);
         batch.end();
+    }
+
+    private void setupBuckets(FailedCallback callback) {
+        for (int j = 0; j < buckets.size(); j++) {
+            Bitch b = buckets.get(j);
+            float dx = Math.abs(b.sprite.getX() - lastCatX);
+            float dy = Math.abs(b.sprite.getY() - lastCatY);
+            if (dx < 20) {
+                if (dy < 20) {
+                    callback.onFail();
+                } else {
+                }
+            } else {
+            }
+            b.batch.begin();
+            b.sprite.draw(b.batch);
+            b.batch.end();
+        }
+    }
+
+    public interface FailedCallback {
+        void onFail();
+    }
+
+    public interface ClearCallback {
+        void onCleared();
+    }
+
+    private void setupMarkers(ClearCallback callback) {
+        for (int j = 0; j < markers.size(); j++) {
+
+            Bitch b = markers.get(j);
+            float dx = Math.abs(b.sprite.getX() - lastCatX);
+            float dy = Math.abs(b.sprite.getY() - lastCatY);
+//            Gdx.app.log(TAG, "so close!! " + dx + "," + dy);
+            if (dx < 20) {
+                if (dy < 20) {
+                    b.batch.begin();
+                    b.sprite.setPosition(-10000, -10000);
+                    b.batch.end();
+                    b.batch.dispose();
+                    markers.remove(j);
+                    if (markers.size() == 0) callback.onCleared();
+                } else {
+                    b.batch.begin();
+                    b.sprite.draw(b.batch);
+                    b.batch.end();
+                }
+            } else {
+                b.batch.begin();
+                b.sprite.draw(b.batch);
+                b.batch.end();
+            }
+        }
     }
 
     @Override
     public void dispose() {
         batch.dispose();
         texture.dispose();
+        for (Bitch b : buckets) {
+            b.batch.dispose();
+        }
+        for (Bitch b : markers) {
+            b.batch.dispose();
+        }
+        bucketTexture.dispose();
+        markerTexture.dispose();
+
+        textBatch.dispose();
+        font.dispose();
     }
 
     @Override
