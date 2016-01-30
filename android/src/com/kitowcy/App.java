@@ -10,4 +10,5 @@ import android.app.Application;
 public class App extends Application {
 
     public int screen = -1;
+    public long currentScore = -1;
 }
