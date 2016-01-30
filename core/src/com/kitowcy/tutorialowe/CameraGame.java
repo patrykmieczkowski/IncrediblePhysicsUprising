@@ -1,4 +1,4 @@
-package com.kitowcy.tests;
+package com.kitowcy.tutorialowe;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.kitowcy.tests.MainGame;
 
 public class CameraGame extends ApplicationAdapter implements GestureDetector.GestureListener {
 
