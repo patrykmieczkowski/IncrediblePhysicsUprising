@@ -24,6 +24,13 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
     private Sprite sprite;
     private Sprite backgroundSprite;
 
+    int selectedScreen;
+
+    public InputGame(int screen) {
+//        selectedScreen = screen;
+//        Gdx.app.log(TAG, "selected screen: " + String.valueOf(screen));
+    }
+
     @Override
     public void create() {
         Gdx.app.log(TAG, "create()");
@@ -120,7 +127,7 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
 //        float accelZ = Gdx.input.getAccelerometerZ();
         int newCatX = (int) (w / 2 - sprite.getWidth() / 2 - accelY * 100);
         int newCatY = (int) (h / 2 - sprite.getHeight() / 2 + accelX * 100);
-        lastCatX = (Math.abs(lastCatX - newCatX )< 10.07) ? lastCatX : newCatX;
+        lastCatX = (Math.abs(lastCatX - newCatX) < 10.07) ? lastCatX : newCatX;
         lastCatY = (Math.abs(lastCatY - newCatY) < 10.07) ? lastCatY : newCatY;
 
         sprite.setPosition(lastCatX, lastCatY);

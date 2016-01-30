@@ -12,6 +12,17 @@ public class AndroidLauncher extends AndroidApplication {
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         config.useAccelerometer = true;
         config.useGyroscope = true;
-        initialize(new InputGame(), config);
+        int screen = 0;
+
+        screen = getIntent().getExtras().getInt(Config.BUNDLE_SCREEN);
+
+        switch (screen) {
+            case Config.PLAY:
+                initialize(new InputGame(Config.PLAY), config);
+                break;
+            case Config.HIGHSCORES:
+                initialize(new InputGame(Config.HIGHSCORES), config);
+                break;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.kitowcy;
+package com.kitowcy.tutorialowe;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
