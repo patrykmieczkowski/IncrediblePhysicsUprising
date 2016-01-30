@@ -1,4 +1,4 @@
-package com.kitowcy;
+package com.kitowcy.tests;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

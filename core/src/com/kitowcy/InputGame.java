@@ -11,19 +11,21 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+
 public class InputGame extends ApplicationAdapter implements InputProcessor {
     float w;
     float h;
     int lastCatX, lastCatY;
     int currentOffsetX = 0, currentOffsetY = 0;
     public static final String TAG = InputGame.class.getSimpleName();
-    private SpriteBatch batch;
+    private SpriteBatch catBatch;
     private SpriteBatch backgroundBatch;
-    private Texture texture;
+    private Texture catTexture;
     private Texture backgroundTexture;
-    private Sprite sprite;
+    private Sprite catSprite;
     private Sprite backgroundSprite;
-
+    ArrayList<SpriteBatch> apples = new ArrayList<SpriteBatch>();
     @Override
     public void create() {
         Gdx.app.log(TAG, "create()");
@@ -86,22 +88,28 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
         Gdx.input.setInputProcessor(im);
         w = Gdx.graphics.getWidth();
         h = Gdx.graphics.getHeight();
-        batch = new SpriteBatch();
+
+
+//        for (int j=0;j<10;j++)
+//        apples.add();
+
+        catBatch = new SpriteBatch();
+        catTexture = new Texture(Gdx.files.internal("cat.png"));
+        catSprite = new Sprite(catTexture);
+
         backgroundBatch = new SpriteBatch();
-        texture = new Texture(Gdx.files.internal("cat.png"));
         backgroundTexture = new Texture(Gdx.files.internal("bigimage.jpg"));
         backgroundSprite = new Sprite(backgroundTexture);
         backgroundSprite.setPosition(0, 0);
-        sprite = new Sprite(texture);
 
-        int newCatX = (int) (w / 2 - sprite.getWidth() / 2);
-        int newCatY = (int) (h / 2 - sprite.getHeight() / 2);
+        int newCatX = (int) (w / 2 - catSprite.getWidth() / 2);
+        int newCatY = (int) (h / 2 - catSprite.getHeight() / 2);
         lastCatX = newCatX;
         lastCatY = newCatY;
         lastCatX = (lastCatX - newCatX < 2.0) ? lastCatX : newCatX;
         lastCatY = (lastCatY - newCatY < 2.0) ? lastCatY : newCatY;
+        catSprite.setPosition(lastCatX, lastCatY);
 
-        sprite.setPosition(lastCatX, lastCatY);
     }
 
     @Override
@@ -112,27 +120,29 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
         backgroundSprite.draw(backgroundBatch);
         backgroundBatch.end();
 
-        batch.begin();
+        catBatch.begin();
         float accelX = Gdx.input.getAccelerometerX();
         float accelY = Gdx.input.getAccelerometerY();
 //        Gdx.app.log(TAG, "accelX = " + accelX);
 //        Gdx.app.log(TAG, "accelY = " + accelY);
 //        float accelZ = Gdx.input.getAccelerometerZ();
-        int newCatX = (int) (w / 2 - sprite.getWidth() / 2 - accelY * 100);
-        int newCatY = (int) (h / 2 - sprite.getHeight() / 2 + accelX * 100);
+        int newCatX = (int) (w / 2 - catSprite.getWidth() / 2 + accelY * 100);
+        int newCatY = (int) (h / 2 - catSprite.getHeight() / 2 - accelX * 100);
         lastCatX = (Math.abs(lastCatX - newCatX )< 10.07) ? lastCatX : newCatX;
         lastCatY = (Math.abs(lastCatY - newCatY) < 10.07) ? lastCatY : newCatY;
 
-        sprite.setPosition(lastCatX, lastCatY);
+        catSprite.setPosition(lastCatX, lastCatY);
 
-        sprite.draw(batch);
-        batch.end();
+        catSprite.draw(catBatch);
+        catBatch.end();
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
-        texture.dispose();
+        catBatch.dispose();
+        backgroundBatch.dispose();
+        catTexture.dispose();
+        backgroundTexture.dispose();
     }
 
     @Override
@@ -157,7 +167,7 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Gdx.app.log(TAG, "touchDown");
-        sprite.translateX(-15f);
+        catSprite.translateX(-15f);
         return false;
     }
 
@@ -170,7 +180,7 @@ public class InputGame extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         Gdx.app.log(TAG, "touchDragged");
-        sprite.translateX(3f);
+        catSprite.translateX(3f);
         return false;
     }
 
